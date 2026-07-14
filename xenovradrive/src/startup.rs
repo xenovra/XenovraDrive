@@ -117,13 +117,18 @@ pub async fn init_db(db: &PgPool) {
     ",
         "
         CREATE TABLE IF NOT EXISTS file_chunks (
-            id               UUID         PRIMARY KEY,
-            file_id          UUID         NOT NULL REFERENCES files 
-                                                ON DELETE CASCADE 
+            id                  UUID         PRIMARY KEY,
+            file_id             UUID         NOT NULL REFERENCES files
+                                                ON DELETE CASCADE
                                                 ON UPDATE CASCADE,
-            telegram_file_id VARCHAR(255) NOT NULL,
-            position         SmallInt     NOT NULL
+            telegram_file_id    VARCHAR(255) NOT NULL,
+            telegram_message_id BigInt       NOT NULL DEFAULT 0,
+            position            SmallInt     NOT NULL
         );
+    ",
+        "
+        ALTER TABLE file_chunks
+            ADD COLUMN IF NOT EXISTS telegram_message_id BigInt NOT NULL DEFAULT 0;
     ",
         "
         CREATE TABLE IF NOT EXISTS storage_workers_usages (

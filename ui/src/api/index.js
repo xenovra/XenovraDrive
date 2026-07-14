@@ -1,6 +1,9 @@
 import createLocalStore from '../../libs'
 
-import apiRequest, { apiMultipartRequest } from './request'
+import apiRequest, {
+	apiMultipartRequest,
+	apiMultipartUploadWithProgress,
+} from './request'
 
 /////////////////////////////////////////////////////////////
 ////  USERS
@@ -219,15 +222,16 @@ const createFolder = async (storage_id, path, folderName) => {
  * @param {any} file
  * @returns
  */
-const uploadFile = async (storage_id, path, file) => {
+const uploadFile = async (storage_id, path, file, onProgress) => {
 	const form = new FormData()
 	form.append('file', file)
 	form.append('path', path)
 
-	return await apiMultipartRequest(
+	return await apiMultipartUploadWithProgress(
 		`/storages/${storage_id}/files/upload`,
 		getAuthToken(),
-		form
+		form,
+		onProgress
 	)
 }
 
@@ -238,15 +242,16 @@ const uploadFile = async (storage_id, path, file) => {
  * @param {any} file
  * @returns
  */
-const uploadFileTo = async (storage_id, path, file) => {
+const uploadFileTo = async (storage_id, path, file, onProgress) => {
 	const form = new FormData()
 	form.append('file', file)
 	form.append('path', path)
 
-	return await apiMultipartRequest(
+	return await apiMultipartUploadWithProgress(
 		`/storages/${storage_id}/files/upload_to`,
 		getAuthToken(),
-		form
+		form,
+		onProgress
 	)
 }
 

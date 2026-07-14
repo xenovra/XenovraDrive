@@ -7,8 +7,8 @@ use crate::{
     common::{
         access::check_access,
         channels::{
-            ClientData, ClientMessage, ClientSender, DownloadFileData, StorageManagerData,
-            UploadFileData,
+            ClientData, ClientMessage, ClientSender, DeleteFileData, DownloadFileData,
+            StorageManagerData, UploadFileData,
         },
         jwt_manager::AuthUser,
     },
@@ -278,8 +278,40 @@ impl<'d> FilesService<'d> {
             return Err(XenovraDriveError::InvalidPath);
         }
 
-        // 2. deleting file
+        // 2. deleting the underlying chunk messages from Telegram (best-effort)
+        //    BEFORE the rows are removed, otherwise their message ids are gone.
+        let message_ids = self.repo.list_message_ids_by_path(path, storage_id).await?;
+        if !message_ids.is_empty() {
+            self.delete_from_telegram(storage_id, message_ids).await;
+        }
+
+        // 3. deleting file(s) from the database
         self.repo.delete(path, storage_id).await
+    }
+
+    /// Sends a delete task to the storage manager so the chunk messages are
+    /// removed from Telegram. Best-effort: failures are logged but never block
+    /// the file from being deleted in the app.
+    async fn delete_from_telegram(&self, storage_id: Uuid, message_ids: Vec<i64>) {
+        let (resp_tx, resp_rx) = oneshot::channel();
+        let message = ClientMessage {
+            data: ClientData::DeleteFile(DeleteFileData {
+                storage_id,
+                message_ids,
+            }),
+            tx: resp_tx,
+        };
+
+        let _ = self.tx.send(message).await;
+
+        match resp_rx.await {
+            Ok(msg) => {
+                if let StorageManagerData::DeleteFile(Err(e)) = msg.data {
+                    tracing::error!("failed to delete chunks from Telegram: {e}");
+                }
+            }
+            Err(e) => tracing::error!("storage manager dropped delete response: {e}"),
+        }
     }
 
     /////////////////////////////////////////////////////////////////////

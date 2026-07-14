@@ -49,11 +49,11 @@ impl<'d> StoragesRepository<'d> {
         sqlx::query_as(
             format!(
                 "
-                SELECT s.*, COUNT(f.id) AS files_amount, COALESCE(SUM(f.size), 0)::BigInt as size 
+                SELECT s.*, COUNT(f.id) AS files_amount, COALESCE(SUM(f.size), 0)::BigInt as size
                 FROM {TABLE} s
                 JOIN {ACCESS_TABLE} a ON s.id = a.storage_id
-                LEFT JOIN {FILES_TABLE} f ON s.id = f.storage_id
-                WHERE a.user_id = $1 AND (f.path NOT LIKE '%/' OR f.path IS NULL)
+                LEFT JOIN {FILES_TABLE} f ON s.id = f.storage_id AND f.path NOT LIKE '%/'
+                WHERE a.user_id = $1
                 GROUP by s.id
             "
             )

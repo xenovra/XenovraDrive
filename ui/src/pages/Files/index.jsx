@@ -1,6 +1,7 @@
 import { useBeforeLeave, useNavigate, useParams } from '@solidjs/router'
 import { Show, createSignal, mapArray, onCleanup, onMount } from 'solid-js'
 import List from '@suid/material/List'
+import Paper from '@suid/material/Paper'
 import MenuItem from '@suid/material/MenuItem'
 import ListItemIcon from '@suid/material/ListItemIcon'
 import ListItemText from '@suid/material/ListItemText'
@@ -24,6 +25,7 @@ import CreateFolderDialog from '../../components/CreateFolderDialog'
 import { alertStore } from '../../components/AlertStack'
 import Access from '../../components/Access'
 import GrantAccess from '../../components/GrantAccess'
+import UploadProgress from '../../components/UploadProgress'
 
 const Files = () => {
 	const { addAlert } = alertStore
@@ -41,6 +43,10 @@ const Files = () => {
 	const [isGrantAccessButtonVisible, setIsGrantButtonAccessVisible] =
 		createSignal(false)
 	const [isGrantAccessVisible, setIsGrantAccessVisible] = createSignal(false)
+	/**
+	 * @type {[import("solid-js").Accessor<{name: string, pct: number, processing: boolean} | null>, any]}
+	 */
+	const [upload, setUpload] = createSignal(null)
 	/**
 	 * @type {[import("solid-js").Accessor<import("../api").UserWithAccess[]>, any]}
 	 */
@@ -146,9 +152,16 @@ const Files = () => {
 
 		event.target.value = null
 
-		await API.files.uploadFile(params.id, params.path, file)
-		addAlert(`Uploaded file "${file.name}"`, 'success')
-		await fetchFSLayer()
+		setUpload({ name: file.name, pct: 0, processing: false })
+		try {
+			await API.files.uploadFile(params.id, params.path, file, (pct) =>
+				setUpload((u) => (u ? { ...u, pct, processing: pct >= 100 } : u))
+			)
+			addAlert(`Uploaded file "${file.name}"`, 'success')
+			await fetchFSLayer()
+		} finally {
+			setUpload(null)
+		}
 	}
 
 	return (
@@ -156,7 +169,13 @@ const Files = () => {
 			<Stack container>
 				<Grid container sx={{ mb: 2 }}>
 					<Grid item xs={4}>
-						<Typography variant="h4">{storage()?.name}</Typography>
+						<Typography
+							variant="h4"
+							sx={{ fontWeight: 700, color: '#3a2417' }}
+							noWrap
+						>
+							{storage()?.name}
+						</Typography>
 					</Grid>
 
 					<Grid item xs={4}>
@@ -241,20 +260,41 @@ const Files = () => {
 					}
 				>
 					<Grid>
-						<Show when={fsLayer().length} fallback={<>Not files yet</>}>
-							<List sx={{ minWidth: 320, maxWidth: 540, mx: 'auto' }}>
-								<Divider />
-								{mapArray(fsLayer, (fsElement) => (
-									<>
-										<FSListItem
-											fsElement={fsElement}
-											storageId={params.id}
-											onDelete={fetchFSLayer}
-										/>
-										<Divider />
-									</>
-								))}
-							</List>
+						<Show
+							when={fsLayer().length}
+							fallback={
+								<Typography
+									sx={{ textAlign: 'center', color: '#a08a63', mt: 6 }}
+								>
+									No files yet
+								</Typography>
+							}
+						>
+							<Paper
+								sx={{
+									minWidth: 320,
+									maxWidth: 560,
+									mx: 'auto',
+									borderRadius: '18px',
+									overflow: 'hidden',
+									boxShadow: '0 18px 40px -24px rgba(120,60,10,0.35)',
+								}}
+							>
+								<List sx={{ py: 0 }}>
+									{mapArray(fsLayer, (fsElement, i) => (
+										<>
+											<Show when={i() > 0}>
+												<Divider component="li" />
+											</Show>
+											<FSListItem
+												fsElement={fsElement}
+												storageId={params.id}
+												onDelete={fetchFSLayer}
+											/>
+										</>
+									))}
+								</List>
+							</Paper>
 						</Show>
 					</Grid>
 
@@ -271,6 +311,8 @@ const Files = () => {
 					/>
 				</Show>
 			</Stack>
+
+			<UploadProgress info={upload()} />
 		</>
 	)
 }

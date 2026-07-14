@@ -1,17 +1,19 @@
-import Divider from '@suid/material/Divider'
 import Box from '@suid/material/Box'
+import Paper from '@suid/material/Paper'
 import Button from '@suid/material/Button'
 import TextField from '@suid/material/TextField'
 import Typography from '@suid/material/Typography'
 import { createSignal } from 'solid-js'
 import { useNavigate } from '@solidjs/router'
-import Stack from '@suid/material/Stack'
 import IconButton from '@suid/material/IconButton'
 import HelpOutlineIcon from '@suid/icons-material/HelpOutline'
 import ChevronLeftIcon from '@suid/icons-material/ChevronLeft'
 
 import API from '../../api'
 import { alertStore } from '../../components/AlertStack'
+
+const ORANGE = '#FF8F00'
+const RED = '#C62828'
 
 const StorageCreateForm = () => {
 	const [chatIdErr, setChatIdErr] = createSignal(null)
@@ -57,67 +59,84 @@ const StorageCreateForm = () => {
 	}
 
 	return (
-		<Stack sx={{ maxWidth: 540, minWidth: 320, mx: 'auto' }}>
-			<Box>
-				<Button
-					onClick={() => navigate('/storages')}
-					variant="outlined"
-					startIcon={<ChevronLeftIcon />}
-				>
-					Back
-				</Button>
-			</Box>
+		<Box sx={{ maxWidth: 480, mx: 'auto' }}>
+			<Button
+				onClick={() => navigate('/storages')}
+				startIcon={<ChevronLeftIcon />}
+				sx={{ color: '#667085', mb: 2, textTransform: 'none' }}
+			>
+				Back
+			</Button>
 
-			<Box
+			<Paper
 				component="form"
 				onSubmit={handleSubmit}
 				sx={{
-					py: 2,
-					mx: 'auto',
-					maxWidth: 400,
-					display: 'flex',
-					flexDirection: 'column',
-					alignItems: 'center',
-					'& > :not(style)': { my: 1.5 },
+					p: { xs: 3, sm: 4 },
+					borderRadius: '18px',
+					boxShadow: '0 18px 40px -24px rgba(120,60,10,0.35)',
 				}}
 			>
-				<Typography variant="h5">
-					Register new storage
+				<Box sx={{ display: 'flex', alignItems: 'center', mb: 0.5 }}>
+					<Typography variant="h5" sx={{ fontWeight: 700, color: '#3a2417' }}>
+						Register new storage
+					</Typography>
 					<a
 						href="https://github.com/Xenovra/XenovraDrive/wiki/Creating-storages"
 						target="_blank"
+						rel="noreferrer"
 					>
-						<IconButton color="warning" sx={{ py: 0 }}>
-							<HelpOutlineIcon />
+						<IconButton sx={{ py: 0, color: ORANGE }}>
+							<HelpOutlineIcon fontSize="small" />
 						</IconButton>
 					</a>
+				</Box>
+				<Typography variant="body2" sx={{ color: '#8a6f45', mb: 3 }}>
+					Link a Telegram chat as a storage backend
 				</Typography>
-				<Divider />
+
 				<TextField
 					id="name"
 					name="name"
 					label="Name"
-					variant="standard"
+					variant="outlined"
 					fullWidth
 					required
+					sx={{ mb: 2.5 }}
 				/>
 				<TextField
 					id="chat_id"
 					name="chat_id"
 					label="Chat id"
 					type="number"
-					variant="standard"
+					variant="outlined"
 					onChange={validateChatId}
-					helperText={chatIdErr}
+					helperText={chatIdErr()}
 					error={typeof chatIdErr() === 'string'}
 					fullWidth
 					required
+					sx={{ mb: 3 }}
 				/>
-				<Button type="submit" variant="contained" color="secondary">
-					Register
+
+				<Button
+					type="submit"
+					fullWidth
+					sx={{
+						py: 1.25,
+						borderRadius: '12px',
+						fontWeight: 700,
+						color: '#fff',
+						background: `linear-gradient(135deg, ${ORANGE} 0%, ${RED} 100%)`,
+						boxShadow: `0 12px 26px -12px ${RED}`,
+						'&:hover': {
+							background: `linear-gradient(135deg, ${ORANGE} 12%, ${RED} 100%)`,
+						},
+					}}
+				>
+					Register storage
 				</Button>
-			</Box>
-		</Stack>
+			</Paper>
+		</Box>
 	)
 }
 

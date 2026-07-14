@@ -15,6 +15,7 @@ pub struct ClientMessage {
 pub enum ClientData {
     UploadFile(UploadFileData),
     DownloadFile(DownloadFileData),
+    DeleteFile(DeleteFileData),
 }
 
 pub struct UploadFileData {
@@ -27,6 +28,11 @@ pub struct DownloadFileData {
     pub file_id: Uuid,
     pub storage_id: Uuid,
     pub user_id: Uuid,
+}
+
+pub struct DeleteFileData {
+    pub storage_id: Uuid,
+    pub message_ids: Vec<i64>,
 }
 //////////////////////////////////////
 ///     Storage manager schemas
@@ -45,6 +51,7 @@ impl StorageManagerMessage {
 pub enum StorageManagerData {
     UploadFile(XenovraDriveResult<()>),
     DownloadFile(XenovraDriveResult<Vec<u8>>),
+    DeleteFile(XenovraDriveResult<()>),
 }
 
 //////////////////////////////////////

@@ -169,13 +169,16 @@ impl<'d> FilesRepository<'d> {
 
     pub async fn create_chunks_batch(&self, chunks: Vec<FileChunk>) -> XenovraDriveResult<()> {
         QueryBuilder::new(
-            format!("INSERT INTO {CHUNKS_TABLE} (id, file_id, telegram_file_id, position)")
-                .as_str(),
+            format!(
+                "INSERT INTO {CHUNKS_TABLE} (id, file_id, telegram_file_id, telegram_message_id, position)"
+            )
+            .as_str(),
         )
         .push_values(chunks, |mut q, chunk| {
             q.push_bind(chunk.id)
                 .push_bind(chunk.file_id)
                 .push_bind(chunk.telegram_file_id)
+                .push_bind(chunk.telegram_message_id)
                 .push_bind(chunk.position);
         })
         .build()
@@ -260,7 +263,7 @@ impl<'d> FilesRepository<'d> {
             format!(
                 "SELECT
                     path,
-                    path LIKE '%/' AS is_file
+                    path NOT LIKE '%/' AS is_file
                 FROM {FILES_TABLE}
                 WHERE storage_id = $1 AND path ILIKE $2 || '%' || $3 || '%'
             "
@@ -340,6 +343,38 @@ impl<'d> FilesRepository<'d> {
             .await
             .map_err(|_| XenovraDriveError::Unknown)
             .map(|_| ())
+    }
+
+    /// Returns the Telegram message ids of every chunk belonging to the file(s)
+    /// matched by `path` in the storage (a single file, or all files under a
+    /// folder path). Used to delete those messages from Telegram before the
+    /// rows are removed. Chunks with an unknown message id (0) are skipped.
+    pub async fn list_message_ids_by_path(
+        &self,
+        path: &str,
+        storage_id: Uuid,
+    ) -> XenovraDriveResult<Vec<i64>> {
+        let where_path = if path.ends_with("/") {
+            "LIKE $2 || '%'"
+        } else {
+            "= $2"
+        };
+
+        let rows: Vec<(i64,)> = sqlx::query_as(&format!(
+            "
+            SELECT fc.telegram_message_id
+            FROM {CHUNKS_TABLE} fc
+            JOIN {FILES_TABLE} f ON f.id = fc.file_id
+            WHERE f.storage_id = $1 AND f.path {where_path} AND fc.telegram_message_id <> 0;
+            "
+        ))
+        .bind(storage_id)
+        .bind(path)
+        .fetch_all(self.db)
+        .await
+        .map_err(|_| XenovraDriveError::Unknown)?;
+
+        Ok(rows.into_iter().map(|(id,)| id).collect())
     }
 
     pub async fn delete(&self, path: &str, storage_id: Uuid) -> XenovraDriveResult<()> {

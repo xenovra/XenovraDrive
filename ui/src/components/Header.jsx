@@ -21,18 +21,28 @@ const Header = () => {
 	}
 
 	return (
-		<AppBar>
+		<AppBar
+			elevation={0}
+			sx={{
+				background: 'linear-gradient(90deg, #FF8F00 0%, #C62828 100%)',
+				boxShadow: '0 6px 20px -8px rgba(198,40,40,0.55)',
+			}}
+		>
 			<Toolbar sx={{ justifyContent: 'space-between' }}>
-				<A href="/">
+				<A href="/" style={{ 'text-decoration': 'none' }}>
 					<Box sx={{ display: 'flex', alignItems: 'center' }}>
 						<AppIcon />
-						<Typography variant="h4" noWrap sx={{ pl: 1.5 }}>
+						<Typography
+							variant="h5"
+							noWrap
+							sx={{ pl: 1.5, fontWeight: 700, color: '#fff', letterSpacing: '-0.5px' }}
+						>
 							XenovraDrive
 						</Typography>
 					</Box>
 				</A>
 
-				<IconButton onClick={logout}>
+				<IconButton onClick={logout} sx={{ color: '#fff' }}>
 					<LogoutIcon sx={{ color: 'white' }} />
 				</IconButton>
 			</Toolbar>

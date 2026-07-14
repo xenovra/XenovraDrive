@@ -4,7 +4,7 @@ use uuid::Uuid;
 
 use crate::{
     common::{
-        channels::{DownloadFileData, UploadFileData},
+        channels::{DeleteFileData, DownloadFileData, UploadFileData},
         telegram_api::bot_api::TelegramBotApi,
         types::ChatId,
     },
@@ -90,7 +90,13 @@ impl<'d> StorageManagerService<'d> {
             position
         );
 
-        let chunk = FileChunk::new(Uuid::new_v4(), file_id, document.file_id, position as i16);
+        let chunk = FileChunk::new(
+            Uuid::new_v4(),
+            file_id,
+            document.file_id,
+            document.message_id,
+            position as i16,
+        );
         Ok(chunk)
     }
 
@@ -133,5 +139,43 @@ impl<'d> StorageManagerService<'d> {
         );
 
         Ok(file)
+    }
+
+    pub async fn delete(&self, data: DeleteFileData) -> XenovraDriveResult<()> {
+        // 1. resolve which chat these messages live in
+        let storage = self.storages_repo.get_by_id(data.storage_id).await?;
+
+        // 2. delete every chunk message from Telegram concurrently. Best-effort:
+        //    an individual failure is logged but never blocks removing the file.
+        let futures_: Vec<_> = data
+            .message_ids
+            .into_iter()
+            .map(|message_id| self.delete_message(data.storage_id, storage.chat_id, message_id))
+            .collect();
+
+        for result in join_all(futures_).await {
+            if let Err(e) = result {
+                tracing::error!("[TELEGRAM API] failed to delete chunk message: {e}");
+            }
+        }
+
+        Ok(())
+    }
+
+    async fn delete_message(
+        &self,
+        storage_id: Uuid,
+        chat_id: ChatId,
+        message_id: i64,
+    ) -> XenovraDriveResult<()> {
+        let scheduler = StorageWorkersScheduler::new(self.db, self.rate_limit);
+
+        TelegramBotApi::new(self.telegram_baseurl, scheduler)
+            .delete_message(message_id, chat_id, storage_id)
+            .await?;
+
+        tracing::debug!("[TELEGRAM API] deleted chunk message \"{}\"", message_id);
+
+        Ok(())
     }
 }

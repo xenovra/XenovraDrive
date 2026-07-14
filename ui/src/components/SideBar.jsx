@@ -2,12 +2,14 @@ import Drawer from '@suid/material/Drawer'
 import List from '@suid/material/List'
 import Divider from '@suid/material/Divider'
 import IconButton from '@suid/material/IconButton'
+import Box from '@suid/material/Box'
+import Typography from '@suid/material/Typography'
 import ChevronLeftIcon from '@suid/icons-material/ChevronLeft'
 import ChevronRightIcon from '@suid/icons-material/ChevronRight'
 import ListItem from '@suid/material/ListItem'
 import ListItemButton from '@suid/material/ListItemButton'
 import { createSignal } from 'solid-js'
-import StorageIcon from '@suid/icons-material/Storage'
+import StorageIcon from '@suid/icons-material/StorageOutlined'
 import SmartToyIcon from '@suid/icons-material/SmartToyOutlined'
 
 import SideBarItem from './SideBarItem'
@@ -31,7 +33,7 @@ const SideBar = () => {
 					: 'drawer-paper drawer-paper-closed',
 			}}
 		>
-			<List>
+			<List sx={{ pt: 1 }}>
 				<ListItem disablePadding sx={{ display: 'block' }}>
 					<ListItemButton
 						sx={{
@@ -41,13 +43,22 @@ const SideBar = () => {
 						}}
 						onClick={toggleDrawerOpen}
 					>
-						<IconButton>
+						<IconButton size="small">
 							{open() ? <ChevronLeftIcon /> : <ChevronRightIcon />}
 						</IconButton>
 					</ListItemButton>
 				</ListItem>
 			</List>
-			<Divider />
+
+			{open() && (
+				<Typography
+					variant="overline"
+					sx={{ px: 3, color: '#98a2b3', fontWeight: 700, letterSpacing: '1px' }}
+				>
+					Menu
+				</Typography>
+			)}
+
 			<List>
 				<SideBarItem text="Storages" link="/storages" isFull={open()}>
 					<StorageIcon />
@@ -60,6 +71,17 @@ const SideBar = () => {
 					<SmartToyIcon />
 				</SideBarItem>
 			</List>
+
+			<Box sx={{ flexGrow: 1 }} />
+			<Divider />
+			{open() && (
+				<Typography
+					variant="caption"
+					sx={{ p: 2, color: '#b0b7c3', textAlign: 'center' }}
+				>
+					XenovraDrive
+				</Typography>
+			)}
 		</Drawer>
 	)
 }

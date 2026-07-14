@@ -22,25 +22,27 @@ const SideBarItem = (props) => {
 
 	return (
 		<ListItem key={props.text} disablePadding sx={{ display: 'block' }}>
-			<A href={props.link}>
+			<A href={props.link} class="sidebar-link">
 				<ListItemButton
 					sx={{
-						minHeight: 48,
+						minHeight: 46,
 						justifyContent: props.isFull ? 'initial' : 'center',
-						px: 2.5,
+						px: 2,
 					}}
 				>
 					<ListItemIcon
 						sx={{
 							minWidth: 0,
-							mr: props.isFull ? 3 : 'auto',
+							mr: props.isFull ? 2.5 : 'auto',
 							justifyContent: 'center',
+							color: 'inherit',
 						}}
 					>
 						{c()}
 					</ListItemIcon>
 					<ListItemText
 						primary={props.text}
+						primaryTypographyProps={{ fontWeight: 600, fontSize: '0.95rem' }}
 						sx={{ display: props.isFull ? 'border-box' : 'none' }}
 					/>
 				</ListItemButton>

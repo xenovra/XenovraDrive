@@ -15,7 +15,14 @@ const BasicLayout = () => {
 	return (
 		<>
 			<Header />
-			<Box>
+			<Box
+				sx={{
+					minHeight: '100vh',
+					background:
+						'radial-gradient(900px 420px at 100% 0%, #fff1e0 0%, rgba(255,241,224,0) 42%),' +
+						'#f4f5f7',
+				}}
+			>
 				<CssBaseline />
 				<Toolbar />
 
