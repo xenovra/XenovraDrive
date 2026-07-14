@@ -1,8 +1,8 @@
-![pentaract-github-logo](https://github.com/Xenovra/XenovraDrive/assets/55978340/db39e76f-4119-41c1-bbfd-9b59f40ab626)
+![xenovradrive-github-logo](https://github.com/Xenovra/XenovraDrive/assets/55978340/db39e76f-4119-41c1-bbfd-9b59f40ab626)
 
 [<img alt="GitHub Workflow Status (with event)" src="https://img.shields.io/github/actions/workflow/status/Xenovra/XenovraDrive/docker-image.yml?style=plastic&logo=github">](https://github.com/Xenovra/XenovraDrive/actions)
-[<img alt="Dockerhub latest" src="https://img.shields.io/badge/dockerhub-latest-blue?logo=docker&style=plastic">](https://hub.docker.com/r/thexenovra/pentaract)
-[<img alt="Docker Image Size (tag)" src="https://img.shields.io/docker/image-size/thexenovra/pentaract/latest?style=plastic&logo=docker&color=gold">](https://hub.docker.com/r/thexenovra/pentaract/tags?page=1&name=latest)
+[<img alt="Dockerhub latest" src="https://img.shields.io/badge/dockerhub-latest-blue?logo=docker&style=plastic">](https://hub.docker.com/r/xenovra/xenovradrive)
+[<img alt="Docker Image Size (tag)" src="https://img.shields.io/docker/image-size/xenovra/xenovradrive/latest?style=plastic&logo=docker&color=gold">](https://hub.docker.com/r/xenovra/xenovradrive/tags?page=1&name=latest)
 [<img alt="Any platform" src="https://img.shields.io/badge/platform-any-green?style=plastic&logo=linux&logoColor=white">](https://github.com/Xenovra/XenovraDrive)
 
 _Cloud storage system based on using Telegram as a storage so it doesn't use your server filesystem or any other paid cloud storage system underneath the hood._
@@ -33,7 +33,7 @@ The simplest way to run and manage the app
 1. Create new directory for the app files and name it however you wish:
 
 ```sh
-mkdir pentaract
+mkdir xenovradrive
 ```
 
 2. Go to it and place `docker-compose.yml` file like this one:
@@ -42,13 +42,13 @@ mkdir pentaract
 version: "3.9"
 
 volumes:
-  pentaract-db-volume:
-    name: pentaract-db-volume
+  xenovradrive-db-volume:
+    name: xenovradrive-db-volume
 
 services:
-  pentaract:
-    container_name: pentaract
-    image: thexenovra/pentaract
+  xenovradrive:
+    container_name: xenovradrive
+    image: xenovra/xenovradrive
     env_file:
       - .env
     ports:
@@ -58,14 +58,14 @@ services:
       - db
 
   db:
-    container_name: pentaract_db
+    container_name: xenovradrive_db
     image: postgres:15.0-alpine
     environment:
       POSTGRES_USER: ${DATABASE_USER}
       POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
     restart: unless-stopped
     volumes:
-      - pentaract-db-volume:/var/lib/postgresql/data
+      - xenovradrive-db-volume:/var/lib/postgresql/data
 ```
 
 And `.env` file like the next one. **Don't forget to set your superuser email, password and secret key**:
@@ -81,9 +81,9 @@ REFRESH_TOKEN_EXPIRE_IN_DAYS=14
 SECRET_KEY=<YOUR-SECRET-KEY>
 TELEGRAM_API_BASE_URL=https://api.telegram.org
 
-DATABASE_USER=pentaract
-DATABASE_PASSWORD=pentaract
-DATABASE_NAME=pentaract
+DATABASE_USER=xenovradrive
+DATABASE_PASSWORD=xenovradrive
+DATABASE_NAME=xenovradrive
 DATABASE_HOST=db
 DATABASE_PORT=5432
 ```
@@ -105,7 +105,7 @@ To check if everything works fine you can go to http://localhost:8000 or to `htt
 If there are troubles, you can check the logs, there may be some errors:
 
 ```sh
-docker logs -f pentaract
+docker logs -f xenovradrive
 ```
 
 </details>
@@ -140,7 +140,7 @@ To check if everything works fine you can go to http://localhost:8000 or to `htt
 If there are troubles, you can check the logs, there may be some errors:
 
 ```sh
-docker logs -f pentaract
+docker logs -f xenovradrive
 ```
 
 </details>
@@ -167,7 +167,7 @@ Requires the next stuff to be installed:
 1. Create a directory to place all the app files wherever in your system:
 
 ```sh
-mkdir ~/pentaract
+mkdir ~/xenovradrive
 ```
 
 2. Clone the repository and go inside the newly created directory:
@@ -176,17 +176,17 @@ mkdir ~/pentaract
 git clone git@github.com:Xenovra/XenovraDrive.git
 ```
 
-3. Go to the `./pentaract` directory and build server side app:
+3. Go to the `./xenovradrive` directory and build server side app:
 
 ```sh
-cd ./pentaract
+cd ./xenovradrive
 cargo build --release
 ```
 
 and copy the target to the app directory (or create a soft link via `ln -s`, does not matter):
 
 ```sh
-cp ./target/release/pentaract ~/pentaract/pentaract
+cp ./target/release/xenovradrive ~/xenovradrive/xenovradrive
 ```
 
 4. Go to the `../ui` and build the UI side of the app:
@@ -199,13 +199,13 @@ pnpm run build
 and copy built files into the app directory:
 
 ```sh
-cp ./dist/* ~/pentaract/ui/
+cp ./dist/* ~/xenovradrive/ui/
 ```
 
 5. Now go to the app directory:
 
 ```sh
-cd ~/pentaract
+cd ~/xenovradrive
 ```
 
 6. Make sure that you have Postgres database ran in your system (or available from network)
@@ -220,7 +220,7 @@ export WORKERS=4
 8. Finally run the app:
 
 ```sh
-./pentaract
+./xenovradrive
 ```
 
 To check if everything works fine you can go to http://localhost:8000 or to `http://<YOUR-PUBLIC-IP>:8000` if you run it on a server.

@@ -40,7 +40,7 @@ impl<'t> TelegramBotApi<'t> {
         let token = self.scheduler.get_token(storage_id).await?;
         let url = self.build_url("", "sendDocument", token);
 
-        let file_part = multipart::Part::bytes(file.to_vec()).file_name("pentaract_chunk.bin");
+        let file_part = multipart::Part::bytes(file.to_vec()).file_name("xenovradrive_chunk.bin");
         let form = multipart::Form::new()
             .text("chat_id", chat_id.to_string())
             .part("document", file_part);

@@ -1227,7 +1227,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "pentaract"
+name = "xenovradrive"
 version = "0.1.0"
 dependencies = [
  "axum",
