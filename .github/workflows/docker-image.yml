@@ -3,23 +3,43 @@ name: Docker Image CI
 on:
   push:
     branches: [ "main" ]
+    tags: [ "v*" ]
+
+permissions:
+  contents: read
+  packages: write
 
 jobs:
-  build:
+  build-and-publish:
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Build Docker image
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Docker meta
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          # ghcr image names must be lowercase
+          images: ghcr.io/xenovra/xenovradrive
+          tags: |
+            type=raw,value=latest,enable={{is_default_branch}}
+            type=ref,event=tag
+            type=sha,format=short
+
+      - name: Build and push to GitHub Packages (ghcr.io)
         uses: docker/build-push-action@v5
         with:
           context: .
           file: ./Dockerfile
-          push: false
-          tags: xenovra/xenovradrive:latest
-
-  # NOTE: Publishing to Docker Hub is disabled until registry credentials are
-  # configured. To re-enable, add REGISTRY_USERNAME and REGISTRY_PASSWORD repo
-  # secrets and restore the "Login to Docker Hub" + push (push: true) steps.
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
